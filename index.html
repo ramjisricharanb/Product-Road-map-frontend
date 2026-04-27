@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Project Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">Roadmap Dashboard</p>
+          <h1>Project Tracking Dashboard</h1>
+          <div class="hero-logo" aria-label="nConnect logo">
+            <div class="hero-logo-icon">
+              <span class="logo-dot dot-1"></span>
+              <span class="logo-dot dot-2"></span>
+              <span class="logo-dot dot-3"></span>
+              <span class="logo-dot dot-4"></span>
+              <span class="logo-line line-1"></span>
+              <span class="logo-line line-2"></span>
+              <span class="logo-line line-3"></span>
+            </div>
+            <div class="hero-logo-wordmark">
+              <span class="logo-square">n</span>
+              <span class="logo-text">Connect</span>
+            </div>
+          </div>
+        </div>
+        <button id="openModalButton" class="primary-button">+ Add Task</button>
+      </header>
+
+      <section class="stats-grid" id="statsGrid"></section>
+
+      <section class="controls-card">
+        <div class="controls-top">
+          <div class="input-group">
+            <label for="searchInput">Search</label>
+            <input
+              id="searchInput"
+              type="text"
+              placeholder="Search by module, platform, owner, team..."
+            />
+          </div>
+
+          <div class="filters-row">
+            <div class="input-group compact">
+              <label>Status</label>
+              <div class="multi-select" id="statusFilter"></div>
+            </div>
+
+            <div class="input-group compact">
+              <label>Priority</label>
+              <div class="multi-select" id="priorityFilter"></div>
+            </div>
+
+            <button id="exportButton" class="secondary-button">
+              Export Excel
+            </button>
+
+            <button id="resetFiltersButton" class="secondary-button">
+              Reset Filters
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="table-card">
+        <div class="table-toolbar">
+          <h2>Task List</h2>
+          <p id="taskCountLabel">0 tasks</p>
+        </div>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Platform</th>
+                <th>Module Name</th>
+                <th>Owners</th>
+                <th>Priority</th>
+                <th>Category</th>
+                <th>Status</th>
+                <th>% Complete</th>
+                <th>Start Date</th>
+                <th>Completed Date</th>
+                <th>Description</th>
+                <th>Technical Team</th>
+                <th>Comments</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="taskTableBody"></tbody>
+          </table>
+        </div>
+
+        <div class="pagination-bar">
+          <div class="pagination-size">
+            <label for="pageSizeSelect">Rows per page</label>
+            <select id="pageSizeSelect">
+              <option value="15" selected>15</option>
+              <option value="25">25</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select>
+          </div>
+
+          <p id="paginationInfo" class="pagination-info">Showing 0 to 0 of 0</p>
+
+          <div class="pagination-actions">
+            <button id="previousPageButton" class="secondary-button" type="button">
+              Previous
+            </button>
+            <button id="nextPageButton" class="secondary-button" type="button">
+              Next
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div id="taskModal" class="modal hidden">
+      <div class="modal-panel">
+        <div class="modal-header">
+          <div>
+            <p class="eyebrow">Task Form</p>
+            <h2 id="modalTitle">Add New Task</h2>
+          </div>
+          <button id="closeModalButton" class="icon-button" aria-label="Close">
+            ×
+          </button>
+        </div>
+
+        <form id="taskForm" class="form-grid">
+          <input type="hidden" id="taskId" />
+
+          <div class="input-group">
+            <label for="platform">Platform <span class="required-mark">*</span></label>
+            <input id="platform" name="platform" type="text" required />
+          </div>
+
+          <div class="input-group">
+            <label for="moduleName">Module Name <span class="required-mark">*</span></label>
+            <input id="moduleName" name="moduleName" type="text" required />
+          </div>
+
+          <div class="input-group">
+            <label for="owners">Product/Design Members <span class="required-mark">*</span></label>
+            <input id="owners" name="owners" type="text" required />
+          </div>
+
+          <div class="input-group">
+            <label for="priority">Priority <span class="required-mark">*</span></label>
+            <select id="priority" name="priority" required>
+              <option value="Urgent">Urgent</option>
+              <option value="Medium">Medium</option>
+              <option value="Low">Low</option>
+            </select>
+          </div>
+
+          <div class="input-group">
+            <label for="categoryType">Category Type</label>
+            <select id="categoryType" name="categoryType">
+              <option value="New Feature">New Feature</option>
+              <option value="Revamp">Revamp</option>
+              <option value="Enhancement">Enhancement</option>
+              <option value="Bug Fix">Bug Fix</option>
+            </select>
+          </div>
+
+          <div class="input-group">
+            <label for="status">Current Status <span class="required-mark">*</span></label>
+            <select id="status" name="status" required>
+              <option value="Product">Product</option>
+              <option value="Design">Design</option>
+              <option value="Development">Development</option>
+              <option value="Testing">Testing</option>
+              <option value="Deployed">Deployed</option>
+              <option value="On Hold">On Hold</option>
+            </select>
+          </div>
+
+          <div class="input-group">
+            <label for="percentCompleted">% Completed</label>
+            <input
+              id="percentCompleted"
+              name="percentCompleted"
+              type="number"
+              min="0"
+              max="100"
+            />
+          </div>
+
+          <div class="input-group">
+            <label for="deadline">Start Date</label>
+            <input id="deadline" name="deadline" type="date" />
+          </div>
+
+          <div class="input-group">
+            <label for="ogDeadline">Completed Date</label>
+            <input id="ogDeadline" name="ogDeadline" type="date" />
+          </div>
+
+          <div class="input-group full-width">
+            <label for="description">Description</label>
+            <textarea id="description" name="description" rows="3"></textarea>
+          </div>
+
+          <div class="input-group">
+            <label for="technicalTeam">Technical Team <span class="required-mark">*</span></label>
+            <input id="technicalTeam" name="technicalTeam" type="text" required />
+          </div>
+
+          <div class="input-group">
+            <label for="comments">Comments</label>
+            <input id="comments" name="comments" type="text" />
+          </div>
+
+          <div class="form-actions">
+            <button type="button" id="cancelButton" class="secondary-button">
+              Cancel
+            </button>
+            <button type="submit" class="primary-button">Save Task</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
