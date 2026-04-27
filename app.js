@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://localhost:4000/api";
+const API_BASE_URL = "http://140.245.239.112:4000/api";
 const statusOptions = [
   "Product",
   "Design",
