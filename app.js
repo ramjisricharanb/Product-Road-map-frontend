@@ -1,4 +1,4 @@
-const API_BASE_URL = "https://faculty-colony-spy-cadillac.trycloudflare.com/api";
+const API_BASE_URL = "http://140.245.239.112:4000/api";
 const statusOptions = [
   "Product",
   "Design",
