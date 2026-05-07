@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://140.245.239.112:4000/api";
+const API_BASE_URL = getApiBaseUrl();
 const statusOptions = [
   "Product",
   "Design",
@@ -14,6 +14,16 @@ let selectedStatuses = [];
 let selectedPriorities = [];
 let currentPage = 1;
 let pageSize = 15;
+
+function getApiBaseUrl() {
+  const { hostname } = window.location;
+
+  if (hostname === "localhost" || hostname === "127.0.0.1") {
+    return "http://localhost:4000/api";
+  }
+
+  return "https://api.nconnect.co.in/api";
+}
 
 const statsGrid = document.getElementById("statsGrid");
 const taskTableBody = document.getElementById("taskTableBody");
@@ -281,8 +291,8 @@ function renderTable(filteredTasks) {
             </div>
             ${task.percentCompleted || 0}%
           </td>
-          <td>${formatDisplayDate(task.deadline)}</td>
-          <td>${formatDisplayDate(task.ogDeadline)}</td>
+          <td>${formatDisplayDate(task.startDate)}</td>
+          <td>${formatDisplayDate(task.completedDate)}</td>
           <td>${task.description || "-"}</td>
           <td>${task.technicalTeam || "-"}</td>
           <td>${task.comments || "-"}</td>
@@ -394,8 +404,8 @@ function openModal(task = null) {
   document.getElementById("categoryType").value = task?.categoryType || "New Feature";
   document.getElementById("status").value = task?.status || "Product";
   document.getElementById("percentCompleted").value = task?.percentCompleted ?? 0;
-  document.getElementById("deadline").value = normalizeDateForInput(task?.deadline);
-  document.getElementById("ogDeadline").value = normalizeDateForInput(task?.ogDeadline);
+  document.getElementById("deadline").value = normalizeDateForInput(task?.startDate);
+  document.getElementById("ogDeadline").value = normalizeDateForInput(task?.completedDate);
   document.getElementById("description").value = task?.description || "";
   document.getElementById("technicalTeam").value = task?.technicalTeam || "";
   document.getElementById("comments").value = task?.comments || "";
@@ -423,8 +433,8 @@ async function handleFormSubmit(event) {
     categoryType: formData.get("categoryType") || "-",
     status: formData.get("status"),
     percentCompleted: percentCompletedValue ? Number(percentCompletedValue) : 0,
-    deadline: formData.get("deadline") || "-",
-    ogDeadline: formData.get("ogDeadline") || "-",
+    startDate: formData.get("deadline") || "-",
+    completedDate: formData.get("ogDeadline") || "-",
     description: formData.get("description").trim(),
     technicalTeam: formData.get("technicalTeam").trim(),
     comments: formData.get("comments").trim(),
@@ -482,8 +492,8 @@ function exportFilteredTasks() {
     Category: task.categoryType || "-",
     Status: task.status || "-",
     "% Complete": task.percentCompleted ?? 0,
-    Deadline: formatDisplayDate(task.deadline),
-    "OG Deadline": formatDisplayDate(task.ogDeadline),
+    "Start Date": formatDisplayDate(task.startDate),
+    "Completed Date": formatDisplayDate(task.completedDate),
     Description: task.description || "-",
     "Technical Team": task.technicalTeam || "-",
     Comments: task.comments || "-",
