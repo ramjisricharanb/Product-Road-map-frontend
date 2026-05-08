@@ -22,7 +22,7 @@ function getApiBaseUrl() {
     return "http://localhost:4000/api";
   }
 
-  return "https://api.nconnect.co.in/api";
+  return "http://api.nconnect.co.in:4000/api";
 }
 
 const statsGrid = document.getElementById("statsGrid");
