@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Panel - Project Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="./auth.js"></script>
+    <style>
+      .admin-container {
+        padding: 40px;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      .admin-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+      }
+      .status-badge {
+        padding: 4px 12px;
+        border-radius: 9999px;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+      .status-active {
+        background: #d1fae5;
+        color: #065f46;
+      }
+      .status-revoked {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+      .role-badge {
+        background: #e0e7ff;
+        color: #3730a3;
+        padding: 4px 12px;
+        border-radius: 9999px;
+        font-size: 12px;
+        font-weight: 700;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="header">
+        <div class="header-left">
+          <div class="hero-logo">
+            <div class="hero-logo-icon">
+              <span class="logo-dot dot-1"></span>
+              <span class="logo-dot dot-2"></span>
+              <span class="logo-dot dot-3"></span>
+              <span class="logo-dot dot-4"></span>
+              <span class="logo-line line-1"></span>
+              <span class="logo-line line-2"></span>
+              <span class="logo-line line-3"></span>
+            </div>
+            <div class="hero-logo-wordmark">
+              <span class="logo-square">n</span>
+              <span class="logo-text">Connect</span>
+            </div>
+          </div>
+          <div class="header-right">
+            <a href="./index.html" style="font-weight: 600; color: var(--text-main); text-decoration: none; margin-right: 16px;">Back to Dashboard</a>
+            <button class="primary-button" onclick="logout()" style="background: transparent; border: 1px solid var(--border); color: var(--text-main); margin-right: 16px;">Logout</button>
+          </div>
+        </div>
+      </header>
+
+      <div class="admin-container">
+        <div class="admin-header">
+          <h1 style="font-size: 24px; font-weight: 700; color: var(--text-main);">User Management</h1>
+        </div>
+
+        <section class="table-card">
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>EMAIL</th>
+                  <th>ROLE</th>
+                  <th>STATUS</th>
+                  <th>LAST LOGIN</th>
+                  <th>CREATED AT</th>
+                  <th>ACTIONS</th>
+                </tr>
+              </thead>
+              <tbody id="userTableBody">
+                <!-- Users will be injected here -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <script>
+      // Verify Admin
+      const currentUser = getUser();
+      if (!currentUser || currentUser.role !== "ADMIN") {
+        window.location.href = "./index.html";
+      }
+
+      function getApiBaseUrl() {
+        const { hostname } = window.location;
+        if (hostname === "localhost" || hostname === "127.0.0.1") {
+          return "http://localhost:4000/api";
+        }
+        return "https://api.nconnect.co.in/api";
+      }
+
+      async function loadUsers() {
+        try {
+          const response = await fetch(`${getApiBaseUrl()}/admin/users`, {
+            headers: getAuthHeaders()
+          });
+          
+          if (!response.ok) {
+            throw new Error("Failed to load users");
+          }
+
+          const users = await response.json();
+          renderUsers(users);
+        } catch (error) {
+          console.error(error);
+          alert("Could not load users. You might not have admin privileges.");
+        }
+      }
+
+      function renderUsers(users) {
+        const tbody = document.getElementById("userTableBody");
+        tbody.innerHTML = "";
+
+        users.forEach(user => {
+          const row = document.createElement("tr");
+
+          const loginDate = user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString() : "Never";
+          const createdDate = new Date(user.createdAt).toLocaleDateString();
+
+          const isSelf = user.id === currentUser.id;
+          
+          const actionButton = isSelf ? 
+            `<span style="color: var(--text-muted); font-size: 12px;">(You)</span>` :
+            `<button class="action-button" style="color: ${user.isActive ? '#ef4444' : '#10b981'}" onclick="toggleUserStatus('${user.id}', ${!user.isActive})">
+               ${user.isActive ? 'Revoke Access' : 'Enable Access'}
+             </button>`;
+
+          row.innerHTML = `
+            <td>
+              <div class="user-profile">
+                <div class="avatar" style="background: var(--primary); color: white;">${user.email[0].toUpperCase()}</div>
+                <span style="font-weight: 500; color: var(--text-main);">${user.email}</span>
+              </div>
+            </td>
+            <td><span class="role-badge">${user.role}</span></td>
+            <td><span class="status-badge ${user.isActive ? 'status-active' : 'status-revoked'}">${user.isActive ? 'Active' : 'Revoked'}</span></td>
+            <td style="color: var(--text-muted);">${loginDate}</td>
+            <td style="color: var(--text-muted);">${createdDate}</td>
+            <td>
+              <div class="actions-cell">
+                ${actionButton}
+              </div>
+            </td>
+          `;
+          tbody.appendChild(row);
+        });
+      }
+
+      window.toggleUserStatus = async function(userId, isActive) {
+        if (!confirm(`Are you sure you want to ${isActive ? 'enable' : 'revoke'} access for this user?`)) return;
+
+        try {
+          const response = await fetch(`${getApiBaseUrl()}/admin/users/${userId}/revoke`, {
+            method: "PUT",
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ isActive })
+          });
+
+          if (!response.ok) {
+            throw new Error("Failed to update user status");
+          }
+
+          loadUsers();
+        } catch (error) {
+          console.error(error);
+          alert(error.message);
+        }
+      };
+
+      document.addEventListener("DOMContentLoaded", () => {
+        loadUsers();
+      });
+    </script>
+  </body>
+</html>

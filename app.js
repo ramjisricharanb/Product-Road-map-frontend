@@ -67,12 +67,35 @@ function initializeDashboard() {
   taskForm.addEventListener("submit", handleFormSubmit);
   document.addEventListener("click", handleOutsideMultiSelectClick);
 
+  initUserDisplay();
   loadTasksFromBackend();
+}
+
+function initUserDisplay() {
+  const user = getUser();
+  if (user) {
+    document.getElementById("displayUserName").textContent = user.email.split("@")[0];
+    
+    // Check admin role to show an admin link (optional for now, can be expanded later)
+    if (user.role === "ADMIN") {
+      const headerRight = document.querySelector(".header-right");
+      const adminLink = document.createElement("a");
+      adminLink.href = "./admin.html";
+      adminLink.textContent = "Admin Panel";
+      adminLink.style.marginRight = "16px";
+      adminLink.style.fontWeight = "bold";
+      adminLink.style.color = "var(--primary)";
+      adminLink.style.textDecoration = "none";
+      headerRight.insertBefore(adminLink, headerRight.firstChild);
+    }
+  }
 }
 
 async function loadTasksFromBackend() {
   try {
-    const response = await fetch(`${API_BASE_URL}/tasks`);
+    const response = await fetch(`${API_BASE_URL}/tasks`, {
+      headers: getAuthHeaders()
+    });
 
     if (!response.ok) {
       throw new Error("Could not load tasks from backend");
@@ -450,6 +473,7 @@ async function handleFormSubmit(event) {
       method: requestMethod,
       headers: {
         "Content-Type": "application/json",
+        ...getAuthHeaders()
       },
       body: JSON.stringify(taskData),
     });
@@ -550,6 +574,7 @@ async function deleteTask(event, taskId) {
     try {
       const response = await fetch(`${API_BASE_URL}/tasks/${taskId}`, {
         method: "DELETE",
+        headers: getAuthHeaders()
       });
 
       if (!response.ok) {
