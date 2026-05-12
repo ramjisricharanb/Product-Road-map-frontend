@@ -299,7 +299,7 @@ function renderTable(filteredTasks) {
           <td>
             <div class="actions-cell">
               <button class="action-button" onclick="editTask('${task.id}')">Edit</button>
-              <button class="action-button delete" onclick="deleteTask('${task.id}')">Delete</button>
+              <button class="action-button delete" onclick="deleteTask(event, '${task.id}')">Delete</button>
             </div>
           </td>
         </tr>
@@ -534,26 +534,34 @@ function editTask(taskId) {
   }
 }
 
-async function deleteTask(taskId) {
-  const confirmed = window.confirm("Do you want to delete this task?");
-  if (!confirmed) {
-    return;
+async function deleteTask(event, taskId) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
   }
 
-  try {
-    const response = await fetch(`${API_BASE_URL}/tasks/${taskId}`, {
-      method: "DELETE",
-    });
-
-    if (!response.ok) {
-      throw new Error("Task could not be deleted");
+  // Small delay to prevent browser focus issues with native alerts
+  setTimeout(async () => {
+    const confirmed = window.confirm("Do you want to delete this task?");
+    if (!confirmed) {
+      return;
     }
 
-    await loadTasksFromBackend();
-  } catch (error) {
-    console.error(error);
-    window.alert("Could not delete task from backend.");
-  }
+    try {
+      const response = await fetch(`${API_BASE_URL}/tasks/${taskId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Task could not be deleted");
+      }
+
+      await loadTasksFromBackend();
+    } catch (error) {
+      console.error(error);
+      window.alert("Could not delete task from backend.");
+    }
+  }, 10);
 }
 
 window.editTask = editTask;
