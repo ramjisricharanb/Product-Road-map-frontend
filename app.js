@@ -75,6 +75,10 @@ function initUserDisplay() {
   const user = getUser();
   if (user) {
     document.getElementById("displayUserName").textContent = user.email.split("@")[0];
+    const avatarEl = document.getElementById("displayAvatar");
+    if (avatarEl) {
+      avatarEl.textContent = user.email[0].toUpperCase();
+    }
     
     // Check admin role to show an admin link (optional for now, can be expanded later)
     if (user.role === "ADMIN") {
@@ -82,9 +86,10 @@ function initUserDisplay() {
       const adminLink = document.createElement("a");
       adminLink.href = "./admin.html";
       adminLink.textContent = "Admin Panel";
+      adminLink.className = "primary-button";
       adminLink.style.marginRight = "16px";
-      adminLink.style.fontWeight = "bold";
-      adminLink.style.color = "var(--primary)";
+      adminLink.style.background = "var(--primary)";
+      adminLink.style.color = "white";
       adminLink.style.textDecoration = "none";
       headerRight.insertBefore(adminLink, headerRight.firstChild);
     }
