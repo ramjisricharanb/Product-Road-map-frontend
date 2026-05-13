@@ -88,10 +88,30 @@
           <p id="taskCountLabel">0 tasks</p>
         </div>
 
+        <div id="bulkActionBar" class="bulk-action-bar hidden">
+          <span id="bulkSelectedCount">0 selected</span>
+          <div class="bulk-actions">
+            <div class="bulk-status-group">
+              <label for="bulkStatusSelect">Change Status:</label>
+              <select id="bulkStatusSelect">
+                <option value="Product">Product</option>
+                <option value="Design">Design</option>
+                <option value="Development">Development</option>
+                <option value="Testing">Testing</option>
+                <option value="Deployed">Deployed</option>
+                <option value="On Hold">On Hold</option>
+              </select>
+              <button id="bulkChangeStatusBtn" class="action-button bulk-status-btn">Apply</button>
+            </div>
+            <button id="bulkDeleteBtn" class="action-button delete">Delete Selected</button>
+          </div>
+        </div>
+
         <div class="table-wrapper">
           <table>
             <thead>
               <tr>
+                <th class="checkbox-col"><input type="checkbox" id="selectAllCheckbox" title="Select All" /></th>
                 <th>Platform</th>
                 <th>Module Name</th>
                 <th>Owners</th>

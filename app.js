@@ -14,6 +14,7 @@ let selectedStatuses = [];
 let selectedPriorities = [];
 let currentPage = 1;
 let pageSize = 15;
+let selectedTaskIds = new Set();
 
 function getApiBaseUrl() {
   const { hostname } = window.location;
@@ -66,6 +67,11 @@ function initializeDashboard() {
   });
   taskForm.addEventListener("submit", handleFormSubmit);
   document.addEventListener("click", handleOutsideMultiSelectClick);
+
+  // Bulk action listeners
+  document.getElementById("selectAllCheckbox").addEventListener("change", handleSelectAll);
+  document.getElementById("bulkChangeStatusBtn").addEventListener("click", handleBulkChangeStatus);
+  document.getElementById("bulkDeleteBtn").addEventListener("click", handleBulkDelete);
 
   initUserDisplay();
   loadTasksFromBackend();
@@ -297,16 +303,18 @@ function renderTable(filteredTasks) {
   if (!filteredTasks.length) {
     taskTableBody.innerHTML = `
       <tr>
-        <td colspan="13" class="empty-state">No tasks found for the selected filters.</td>
+        <td colspan="14" class="empty-state">No tasks found for the selected filters.</td>
       </tr>
     `;
+    updateBulkActionBar();
     return;
   }
 
   taskTableBody.innerHTML = filteredTasks
     .map(
       (task) => `
-        <tr>
+        <tr class="${selectedTaskIds.has(task.id) ? 'row-selected' : ''}">
+          <td class="checkbox-col"><input type="checkbox" class="row-checkbox" data-task-id="${task.id}" ${selectedTaskIds.has(task.id) ? 'checked' : ''} /></td>
           <td>${task.platform}</td>
           <td>${task.moduleName}</td>
           <td>${task.owners}</td>
@@ -334,6 +342,14 @@ function renderTable(filteredTasks) {
       `
     )
     .join("");
+
+  // Attach row checkbox listeners
+  taskTableBody.querySelectorAll('.row-checkbox').forEach(cb => {
+    cb.addEventListener('change', handleRowCheckboxChange);
+  });
+
+  updateSelectAllCheckbox(filteredTasks);
+  updateBulkActionBar();
 }
 
 function getPaginatedTasks(filteredTasks) {
@@ -596,3 +612,117 @@ async function deleteTask(event, taskId) {
 
 window.editTask = editTask;
 window.deleteTask = deleteTask;
+
+// --- Multi-Select / Bulk Actions ---
+
+function handleRowCheckboxChange(event) {
+  const taskId = event.target.dataset.taskId;
+  if (event.target.checked) {
+    selectedTaskIds.add(taskId);
+  } else {
+    selectedTaskIds.delete(taskId);
+  }
+  // Re-render to update row highlight & select-all state
+  const filteredTasks = getFilteredTasks();
+  const paginatedTasks = getPaginatedTasks(filteredTasks);
+  renderTable(paginatedTasks);
+}
+
+function handleSelectAll(event) {
+  const filteredTasks = getFilteredTasks();
+  const paginatedTasks = getPaginatedTasks(filteredTasks);
+
+  if (event.target.checked) {
+    paginatedTasks.forEach(task => selectedTaskIds.add(task.id));
+  } else {
+    paginatedTasks.forEach(task => selectedTaskIds.delete(task.id));
+  }
+
+  renderTable(paginatedTasks);
+}
+
+function updateSelectAllCheckbox(paginatedTasks) {
+  const selectAll = document.getElementById('selectAllCheckbox');
+  if (!paginatedTasks.length) {
+    selectAll.checked = false;
+    selectAll.indeterminate = false;
+    return;
+  }
+  const allChecked = paginatedTasks.every(t => selectedTaskIds.has(t.id));
+  const someChecked = paginatedTasks.some(t => selectedTaskIds.has(t.id));
+  selectAll.checked = allChecked;
+  selectAll.indeterminate = someChecked && !allChecked;
+}
+
+function updateBulkActionBar() {
+  const bar = document.getElementById('bulkActionBar');
+  const countLabel = document.getElementById('bulkSelectedCount');
+  const count = selectedTaskIds.size;
+
+  if (count > 0) {
+    bar.classList.remove('hidden');
+    countLabel.textContent = `${count} task${count > 1 ? 's' : ''} selected`;
+  } else {
+    bar.classList.add('hidden');
+  }
+}
+
+async function handleBulkChangeStatus() {
+  if (selectedTaskIds.size === 0) return;
+  const newStatus = document.getElementById('bulkStatusSelect').value;
+  const confirmed = window.confirm(`Change status of ${selectedTaskIds.size} task(s) to "${newStatus}"?`);
+  if (!confirmed) return;
+
+  try {
+    const promises = Array.from(selectedTaskIds).map(taskId => {
+      const task = tasks.find(t => t.id === taskId);
+      if (!task) return Promise.resolve();
+      const updatedData = {
+        platform: task.platform,
+        moduleName: task.moduleName,
+        owners: task.owners,
+        priority: task.priority,
+        categoryType: task.categoryType || "-",
+        status: newStatus,
+        percentCompleted: task.percentCompleted || 0,
+        startDate: task.startDate || "-",
+        completedDate: task.completedDate || "-",
+        description: task.description || "",
+        technicalTeam: task.technicalTeam,
+        comments: task.comments || "",
+      };
+      return fetch(`${API_BASE_URL}/tasks/${taskId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+        body: JSON.stringify(updatedData),
+      });
+    });
+    await Promise.all(promises);
+    selectedTaskIds.clear();
+    await loadTasksFromBackend();
+  } catch (error) {
+    console.error(error);
+    window.alert('Could not update tasks. Please try again.');
+  }
+}
+
+async function handleBulkDelete() {
+  if (selectedTaskIds.size === 0) return;
+  const confirmed = window.confirm(`Delete ${selectedTaskIds.size} task(s)? This cannot be undone.`);
+  if (!confirmed) return;
+
+  try {
+    const promises = Array.from(selectedTaskIds).map(taskId =>
+      fetch(`${API_BASE_URL}/tasks/${taskId}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      })
+    );
+    await Promise.all(promises);
+    selectedTaskIds.clear();
+    await loadTasksFromBackend();
+  } catch (error) {
+    console.error(error);
+    window.alert('Could not delete tasks. Please try again.');
+  }
+}
