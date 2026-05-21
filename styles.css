@@ -47,12 +47,17 @@ textarea {
   display: flex;
   justify-content: space-between;
   gap: 24px;
-  align-items: end;
-  padding: 28px;
+  align-items: center;
+  padding: 16px 24px;
   background: linear-gradient(135deg, #19392b 0%, #2d6b4d 100%);
   color: #fff;
-  border-radius: 28px;
+  border-radius: 24px;
   box-shadow: var(--shadow);
+}
+.hero h1 {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
 .hero h1,
@@ -80,71 +85,71 @@ textarea {
 .hero-logo {
   display: flex;
   align-items: end;
-  gap: 14px;
-  margin-top: 18px;
+  gap: 10px;
+  margin-top: 8px;
 }
 
 .hero-logo-icon {
   position: relative;
-  width: 44px;
-  height: 44px;
-  flex: 0 0 44px;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
 }
 
 .logo-dot {
   position: absolute;
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
   background: #ff9e2c;
 }
 
 .dot-1 {
-  top: 3px;
-  left: 3px;
+  top: 2px;
+  left: 2px;
 }
 
 .dot-2 {
-  top: 3px;
-  right: 5px;
+  top: 2px;
+  right: 4px;
 }
 
 .dot-3 {
-  top: 18px;
-  right: 13px;
+  top: 14px;
+  right: 10px;
 }
 
 .dot-4 {
   bottom: 2px;
-  left: 12px;
+  left: 9px;
 }
 
 .logo-line {
   position: absolute;
-  height: 2px;
+  height: 1.5px;
   background: #ff9e2c;
   transform-origin: left center;
   border-radius: 999px;
 }
 
 .line-1 {
-  top: 7px;
-  left: 9px;
-  width: 18px;
+  top: 5px;
+  left: 7px;
+  width: 14px;
   transform: rotate(6deg);
 }
 
 .line-2 {
-  top: 10px;
-  left: 10px;
-  width: 18px;
+  top: 8px;
+  left: 8px;
+  width: 14px;
   transform: rotate(58deg);
 }
 
 .line-3 {
-  top: 22px;
-  left: 14px;
-  width: 14px;
+  top: 17px;
+  left: 11px;
+  width: 11px;
   transform: rotate(154deg);
 }
 
@@ -159,17 +164,17 @@ textarea {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 38px;
-  height: 38px;
+  width: 28px;
+  height: 28px;
   background: linear-gradient(135deg, #ffb347 0%, #ff8a00 100%);
   color: #ffffff;
-  font-size: 33px;
+  font-size: 24px;
   font-weight: 700;
   line-height: 1;
 }
 
 .logo-text {
-  font-size: 56px;
+  font-size: 42px;
   font-weight: 500;
   line-height: 0.85;
   letter-spacing: -0.04em;
@@ -178,8 +183,8 @@ textarea {
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 18px;
-  margin: 22px 0;
+  gap: 14px;
+  margin: 14px 0;
 }
 
 .stat-card,
@@ -187,23 +192,24 @@ textarea {
 .table-card {
   background: var(--surface);
   border: 1px solid rgba(216, 228, 215, 0.8);
-  border-radius: 24px;
+  border-radius: 20px;
   box-shadow: var(--shadow);
 }
 
 .stat-card {
-  padding: 20px;
+  padding: 12px 18px;
 }
 
 .stat-label {
   margin: 0;
   color: var(--muted);
-  font-size: 14px;
+  font-size: 13px;
+  font-weight: 700;
 }
 
 .stat-value {
-  margin: 10px 0 0;
-  font-size: 34px;
+  margin: 4px 0 0;
+  font-size: 26px;
   font-weight: 800;
 }
 
@@ -231,9 +237,12 @@ textarea {
   border-top: 5px solid #81c784;
 }
 
-.controls-card,
+.controls-card {
+  padding: 14px 20px;
+}
+
 .table-card {
-  padding: 22px;
+  padding: 18px 20px;
 }
 
 .controls-top,
