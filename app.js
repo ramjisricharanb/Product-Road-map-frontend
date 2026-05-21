@@ -15,6 +15,7 @@ let selectedPriorities = [];
 let currentPage = 1;
 let pageSize = 15;
 let selectedTaskIds = new Set();
+let globalTooltip = null;
 
 function getApiBaseUrl() {
   const { hostname } = window.location;
@@ -74,6 +75,7 @@ function initializeDashboard() {
   document.getElementById("bulkDeleteBtn").addEventListener("click", handleBulkDelete);
 
   initUserDisplay();
+  setupDescriptionTooltip();
   loadTasksFromBackend();
 }
 
@@ -329,7 +331,7 @@ function renderTable(filteredTasks) {
           </td>
           <td>${formatDisplayDate(task.startDate)}</td>
           <td>${formatDisplayDate(task.completedDate)}</td>
-          <td>${task.description || "-"}</td>
+          <td class="description-cell" data-description="${(task.description || '').replace(/"/g, '&quot;')}"><span class="description-truncate">${task.description || "-"}</span></td>
           <td>${task.technicalTeam || "-"}</td>
           <td>${task.comments || "-"}</td>
           <td>
@@ -725,4 +727,70 @@ async function handleBulkDelete() {
     console.error(error);
     window.alert('Could not delete tasks. Please try again.');
   }
+}
+
+function setupDescriptionTooltip() {
+  if (!document.getElementById("descriptionGlobalTooltip")) {
+    globalTooltip = document.createElement("div");
+    globalTooltip.id = "descriptionGlobalTooltip";
+    globalTooltip.className = "description-global-tooltip hidden";
+    document.body.appendChild(globalTooltip);
+  } else {
+    globalTooltip = document.getElementById("descriptionGlobalTooltip");
+  }
+
+  document.addEventListener("mouseover", (event) => {
+    const cell = event.target.closest(".description-cell");
+    if (!cell || !globalTooltip) return;
+
+    const desc = cell.getAttribute("data-description");
+    if (!desc || desc.trim() === "" || desc === "-") return;
+
+    globalTooltip.textContent = desc;
+    globalTooltip.classList.remove("hidden");
+    setTimeout(() => {
+      globalTooltip.classList.add("visible");
+    }, 10);
+
+    const updatePosition = () => {
+      const rect = cell.getBoundingClientRect();
+      let top = window.scrollY + rect.top - globalTooltip.offsetHeight - 10;
+      let left = window.scrollX + rect.left + (rect.width / 2) - (globalTooltip.offsetWidth / 2);
+
+      if (left < 10) {
+        left = 10;
+      }
+      const maxLeft = window.innerWidth - globalTooltip.offsetWidth - 10;
+      if (left > maxLeft) {
+        left = maxLeft;
+      }
+      if (rect.top - globalTooltip.offsetHeight - 10 < 10) {
+        top = window.scrollY + rect.bottom + 10;
+      }
+
+      globalTooltip.style.top = `${top}px`;
+      globalTooltip.style.left = `${left}px`;
+    };
+
+    updatePosition();
+    
+    const handleScrollResize = () => {
+      if (!globalTooltip.classList.contains("hidden")) {
+        updatePosition();
+      }
+    };
+    window.addEventListener("scroll", handleScrollResize, { passive: true });
+    window.addEventListener("resize", handleScrollResize, { passive: true });
+
+    const handleMouseLeave = () => {
+      if (globalTooltip) {
+        globalTooltip.classList.remove("visible");
+        globalTooltip.classList.add("hidden");
+      }
+      cell.removeEventListener("mouseleave", handleMouseLeave);
+      window.removeEventListener("scroll", handleScrollResize);
+      window.removeEventListener("resize", handleScrollResize);
+    };
+    cell.addEventListener("mouseleave", handleMouseLeave);
+  });
 }
