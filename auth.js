@@ -1,4 +1,4 @@
-// auth.js - Handles authentication state and tokens (Bypassed per user request)
+// auth.js - Handles authentication state and tokens
 
 const TOKEN_KEY = "nconnect_auth_token";
 const USER_KEY = "nconnect_user";
@@ -14,20 +14,16 @@ function clearAuthData() {
 }
 
 function getToken() {
-  // Always return a dummy token to bypass auth checks
-  return localStorage.getItem(TOKEN_KEY) || "dummy_token";
+  return localStorage.getItem(TOKEN_KEY);
 }
 
 function getUser() {
   const userStr = localStorage.getItem(USER_KEY);
-  if (!userStr) {
-    // Return default admin profile to keep the dashboard profile and admin panel functional
-    return { email: "ramji.sricharan@narayanagroup.com", role: "ADMIN" };
-  }
+  if (!userStr) return null;
   try {
     return JSON.parse(userStr);
   } catch (e) {
-    return { email: "ramji.sricharan@narayanagroup.com", role: "ADMIN" };
+    return null;
   }
 }
 
@@ -45,18 +41,20 @@ function getAuthHeaders() {
 
 function logout() {
   clearAuthData();
-  // Redirect to dashboard index instead of login page
-  window.location.href = "./index.html";
+  window.location.href = "./login.html";
 }
 
 function checkAuthProtection() {
+  // If we are on a protected page (like index.html) and not authenticated, redirect to login
   const isAuthPage = window.location.pathname.includes("login.html") || 
                      window.location.pathname.includes("signup.html") ||
                      window.location.pathname.includes("forgot-password.html") ||
                      window.location.pathname.includes("reset-password.html");
                      
-  if (isAuthPage) {
-    // Automatically redirect all login/signup screens straight to the dashboard
+  if (!isAuthenticated() && !isAuthPage) {
+    window.location.href = "./login.html";
+  } else if (isAuthenticated() && isAuthPage) {
+    // If we are authenticated but on an auth page, redirect to dashboard
     window.location.href = "./index.html";
   }
 }
